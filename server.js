@@ -13,12 +13,12 @@
 var express = require('express'),
 		app = express(),
 		server = require('http').createServer(app),
-		io = require('socket.io').listen(server);
+		io = require('socket.io').listen(server, {log: true});
 
 var clients = 0, // Number of active clients
 		shipPositions = {}, // Tracks the client ship positions
 		currentRow = 0, // row we're currently on
-    betterMediator = false;
+    betterMediator = true;
 
 // Start the server
 server.listen('5000')
@@ -56,18 +56,37 @@ function getUpdatedPosition() {
   // Take the majority
   else {
     console.log("BETTER MEDIATOR");
-    var positions = [0,0,0,0,0]
+    var positions = [0,0,0,0,0];
+    var active = false;
     for (key in shipPositions) {
       pos = shipPositions[key].position;
-      time = (new Date().getTime()) - shipPosition[key].time;
+      time = (new Date().getTime()) - shipPositions[key].time;
       console.log("TIME DIFFERENCE IS " + time);
 
 
       if (pos && time < 10 * 1000) {
         positions[pos]++;
+        active = true;
       }
     }
-    return Math.max.apply(Math, position);
+
+    // Fall back to basic if everyone times out
+    if (!active) {
+      var sum = 0;
+      for (key in shipPositions) {
+        pos = shipPositions[key].position;
+        var x = pos? pos : 0;
+        sum += x;
+      }
+      return Math.round(sum/clients);
+    }
+
+
+    return positions.map(function(e, i){
+        return {pos:i, count:e}})
+      .reduce(function(a, b){
+        return a.count > b.count ? a : b;
+      }).pos;
   }
 }
 
@@ -140,14 +159,28 @@ function isOccupied(row, col) {
 	return board[(currentRow + row) % board.length][col] == 1;
 }
 
-// Emit board updates once a second
+// Count down to start, in seconds
+function countdown(time) {
+  if(time <0){
+    return
+  }
+  io.sockets.emit('countdown', {time: time});
+  setTimeout(function() {
+    countdown(time-1)
+  }, 1000)
+}
 
+// Emit board updates once a second
 var boardUpdate;
 function updateBoard() {
 	return setInterval(function() {
 		if(isOccupied(1, getUpdatedPosition())) {
 			clearInterval(boardUpdate);
-			io.sockets.emit('gameOver');
+			io.sockets.emit('gameOver', {
+        pos: getUpdatedPosition(),
+        data: shipPositions
+      });
+      countdown(15);
 			setTimeout(function(){
 				boardUpdate = updateBoard()
 			}, 15 * 1000);

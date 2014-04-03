@@ -40,9 +40,8 @@ Mediator
    average position of all clients and uses this to set the ship's position. This
 	 is default.
  * Navigate to ```/better``` to set the mediator mode to "better". This takes the
-   average position of all active clients (i.e. have moved within the past fifteen
-	 seconds). It also weighs clients that have been playing for longer than a minute
-	 twice as high as those who have played shorter.
+   majority position of all active clients (i.e. have moved within the past fifteen
+	 seconds).
 
 
 [forever]:https://github.com/nodejitsu/forever

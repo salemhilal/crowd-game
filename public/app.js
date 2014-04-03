@@ -211,31 +211,14 @@ var Game = function(opts) {
     clearInterval(boardInterval);
   }
 
-  /* Starts/resumes the game */
-  this.resume = function() {
-    boardInterval = setInterval(function() {
-
-      // Update score
-      score += scorePerSec;
-      seconds++;
-      score = Math.round(score * 1000) / 1000;
-      scoreboard.html("$" + score.toFixed(3));
-
-      if(score >= maxScore) {
-        endGame(true);
-        return;
-      }
-
-    }, 1 * 1000);
-
-  }
-
   /* Runs after the game ends */
   function endGame(win) {
     that.pause();
     running = false;
     if(win) {
+      console.log("BOUT 2 ALERT")
       alert("You've reached the highest score!");
+      console.log("DONE ALERTING")
     } else {
       $("#ship").height(0);
       drawBoard();
@@ -278,7 +261,6 @@ var Game = function(opts) {
     scoreboard.html("$" + score.toFixed(3));
     drawBlock(0, shipCol, false, true);
     socket.emit('move', { position: shipCol });
-    that.resume();
   }
 
   // Socket stuff
@@ -287,16 +269,39 @@ var Game = function(opts) {
     $("#crowdShip").remove();
     drawBlock(0, data.position, false, false);
   });
+
   socket.on('updateBoard', function (data) {
+    if (!running) {
+      return
+    }
     currentRow = data.row;
     drawBoard(); // Update board
+
+    score += scorePerSec;
+    seconds++;
+    score = Math.round(score * 1000) / 1000;
+    scoreboard.html("$" + score.toFixed(3));
+
+    if(score >= maxScore) {
+      endGame(true);
+      return;
+    }
   });
+
   socket.on('loadBoard', function (data) {
     board = data.board;
-  })
+  });
+
   socket.on('gameOver', function (data) {
+    console.log("Game Over");
+    console.log(data);
     endGame(false);
-  })
+  });
+
+  socket.on('countdown', function(data) {
+    scoreboard.html("Game starts in " + data.time + " seconds");
+    console.log(data.time);
+  });
 
   init();
 
