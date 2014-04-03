@@ -18,7 +18,7 @@ var express = require('express'),
 var clients = 0, // Number of active clients
 		shipPositions = {}, // Tracks the client ship positions
 		currentRow = 0, // row we're currently on
-    betterMediator = true;
+    betterMediator = false; // Which mediator are we using?
 
 // Start the server
 server.listen('5000')
