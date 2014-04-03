@@ -8,6 +8,6 @@
     "forever": "~0.10.11"
   },
   "scripts": {
-    "start": "./node_modules/forever/bin/forever server.js"
+    "start": "./node_modules/forever/bin/forever start server.js"
   }
 }

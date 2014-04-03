@@ -17,12 +17,22 @@ var express = require('express'),
 
 var clients = 0, // Number of active clients
 		shipPositions = {}, // Tracks the client ship positions
-		currentRow = 0; // row we're currently on
+		currentRow = 0, // row we're currently on
+    betterMediator = false;
 
 // Start the server
 server.listen('5000')
 
 // Render the static directory
+
+app.get("/average", function(req, res) {
+  betterMediator = false;
+  res.end("Set mode to average");
+})
+app.get("/better", function(req, res) {
+  betterMediator = true;
+  res.end("Set mode to better");
+})
 app.use("/", express.static(__dirname + "/public"));
 
 //
@@ -31,13 +41,34 @@ app.use("/", express.static(__dirname + "/public"));
 
 // Returns average of all defined positions
 function getUpdatedPosition() {
-	var sum = 0;
-	for (key in shipPositions) {
-		pos = shipPositions[key].position;
-		var x = pos? pos : 0;
-		sum += x;
-	}
-	return Math.round(sum/clients);
+  // Just average everything
+  if (!betterMediator) {
+    console.log("AVERAGE MEDIATOR");
+  	var sum = 0;
+  	for (key in shipPositions) {
+  		pos = shipPositions[key].position;
+  		var x = pos? pos : 0;
+  		sum += x;
+  	}
+  	return Math.round(sum/clients);
+  }
+
+  // Take the majority
+  else {
+    console.log("BETTER MEDIATOR");
+    var positions = [0,0,0,0,0]
+    for (key in shipPositions) {
+      pos = shipPositions[key].position;
+      time = (new Date().getTime()) - shipPosition[key].time;
+      console.log("TIME DIFFERENCE IS " + time);
+
+
+      if (pos && time < 10 * 1000) {
+        positions[pos]++;
+      }
+    }
+    return Math.max.apply(Math, position);
+  }
 }
 
 var board = [
@@ -83,7 +114,7 @@ io.sockets.on('connection', function (socket) {
 	// and broadcast it
   socket.on('move', function (data) {
     shipPositions[socket.id].position = data.position;
-		shipPositions[socket.id].joinTime = new Date().getTime();
+		shipPositions[socket.id].time = new Date().getTime();
 
 		// Got updated move, recalculate position
 		var pos = getUpdatedPosition();
