@@ -1,0 +1,12 @@
+{
+  "name": "proj5",
+  "description": "Crowdsourced game for Crowd Programming",
+  "version": "0.0.1",
+  "dependencies": {
+    "socket.io": "~0.9.16",
+    "express": "~3.5.1"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
