@@ -4,9 +4,10 @@
   "version": "0.0.1",
   "dependencies": {
     "socket.io": "~0.9.16",
-    "express": "~3.5.1"
+    "express": "~3.5.1",
+    "forever": "~0.10.11"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "./node_modules/forever/bin/forever server.js"
   }
 }
