@@ -20,7 +20,7 @@ var clients = 0, // Number of active clients
 		currentRow = 0; // row we're currently on
 
 // Start the server
-server.listen('3000')
+server.listen('5000')
 
 // Render the static directory
 app.use("/", express.static(__dirname + "/public"));
